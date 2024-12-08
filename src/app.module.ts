@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from './auth/auth.guard';
 import { APP_GUARD } from '@nestjs/core';
+import { StorageModule } from './storage/storage.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { APP_GUARD } from '@nestjs/core';
       isGlobal: true,
     }),
     AuthModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [
