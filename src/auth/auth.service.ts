@@ -9,7 +9,10 @@ export class AuthService {
 
   constructor(private readonly jwtService: JwtService) {}
 
-  async login(credentials: { email?: string; password?: string }) {
+  async login(credentials: {
+    email: string;
+    password: string;
+  }): Promise<string> {
     const { email, password } = credentials;
 
     const isPasswordValid = await bcrypt.compare(password, this.password);
