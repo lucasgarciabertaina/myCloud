@@ -1,74 +1,67 @@
-import {
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  UploadedFile,
-  UseInterceptors,
-} from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { Controller, HttpStatus, Param, UploadedFile } from '@nestjs/common';
 import { StorageService } from './storage.service';
-import { ApiResponse } from '../types/api';
+import { ResponseDto } from 'src/dto/response.dto';
+import { ApiResponse as ResponseInterface } from 'src/interfaces/response.interface';
+import { UploadFileDecorator } from './decorators/uploadFile/controller.decorator';
+import { ListFilesDecorator } from './decorators/listFiles/controller.decorator';
+import { DeleteFileDecorator } from './decorators/deleteFile/controller.decorator';
 
 @Controller('storage')
 export class StorageController {
   constructor(private readonly storageService: StorageService) {}
-
-  @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
+  @UploadFileDecorator()
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
-  ): Promise<ApiResponse<any>> {
+  ): Promise<ResponseInterface<string>> {
     try {
       const key = await this.storageService.uploadFile(file);
-      return {
+      return new ResponseDto<string>({
         message: 'File uploaded successfully',
         data: key,
-        statusCode: 200,
-      };
+        statusCode: HttpStatus.OK,
+      });
     } catch {
-      return {
+      return new ResponseDto<null>({
         message: 'Error uploading file',
         data: null,
-        statusCode: 500,
-      };
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      });
     }
   }
 
-  @Get('files')
-  async listFiles(): Promise<ApiResponse<any>> {
+  @ListFilesDecorator()
+  async listFiles(): Promise<ResponseInterface<Array<string>>> {
     try {
       const files = await this.storageService.getFiles();
-      return {
+      return new ResponseDto<Array<string>>({
         message: 'Files retrieved successfully',
         data: files.map((file) => file.Key),
-        statusCode: 200,
-      };
+        statusCode: HttpStatus.OK,
+      });
     } catch {
-      return {
-        message: 'Error listing file',
+      return new ResponseDto<null>({
+        message: 'Error listing files',
         data: null,
-        statusCode: 500,
-      };
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      });
     }
   }
 
-  @Delete('files/:key')
-  async deleteFile(@Param('key') key: string): Promise<ApiResponse<any>> {
+  @DeleteFileDecorator()
+  async deleteFile(@Param('key') key: string): Promise<ResponseInterface<any>> {
     try {
-      const deletedFileKey = await this.storageService.deleteFile(key);
-      return {
+      const deletedFileKey: string = await this.storageService.deleteFile(key);
+      return new ResponseDto<string>({
         message: 'File deleted successfully',
         data: deletedFileKey,
-        statusCode: 200,
-      };
+        statusCode: HttpStatus.OK,
+      });
     } catch (error) {
-      return {
+      return new ResponseDto<null>({
         message: 'Error deleting file',
         data: null,
-        statusCode: 500,
-      };
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      });
     }
   }
 }
