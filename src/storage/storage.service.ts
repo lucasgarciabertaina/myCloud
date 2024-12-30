@@ -6,9 +6,11 @@ import {
   ListObjectsV2CommandOutput,
   _Object,
   DeleteObjectCommand,
+  GetObjectCommand,
 } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
+import { Readable } from 'stream';
 
 @Injectable()
 export class StorageService {
@@ -75,6 +77,26 @@ export class StorageService {
     } catch (error) {
       console.error(error);
       throw new Error('Error fetching files. Please try again later');
+    }
+  }
+
+  async getFileStream(Key: string): Promise<Readable> {
+    try {
+      const response = await this.s3Client.send(
+        new GetObjectCommand({
+          Bucket: this.bucketName,
+          Key,
+        }),
+      );
+
+      if (!response.Body) {
+        throw new Error('File not found');
+      }
+
+      return response.Body as Readable;
+    } catch (error) {
+      console.error(error);
+      throw new Error('Error fetching file stream. Please try again later');
     }
   }
 }

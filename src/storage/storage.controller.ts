@@ -5,7 +5,9 @@ import { ApiResponse as ResponseInterface } from 'src/interfaces/response.interf
 import { UploadFileDecorator } from './decorators/uploadFile/controller.decorator';
 import { ListFilesDecorator } from './decorators/listFiles/controller.decorator';
 import { DeleteFileDecorator } from './decorators/deleteFile/controller.decorator';
-
+import { DownloadFileDecorator } from './decorators/downloadFile/controller.decorator';
+import { Response } from 'express';
+import { Res } from '@nestjs/common';
 @Controller('storage')
 export class StorageController {
   constructor(private readonly storageService: StorageService) {}
@@ -61,6 +63,26 @@ export class StorageController {
         message: 'Error deleting file',
         data: null,
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      });
+    }
+  }
+
+  @DownloadFileDecorator()
+  async downloadFile(
+    @Param('key') key: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    try {
+      const fileStream = await this.storageService.getFileStream(key);
+      res.set({
+        'Content-Type': 'application/octet-stream',
+        'Content-Disposition': `attachment; filename="${key}"`,
+      });
+      fileStream.pipe(res);
+    } catch (error) {
+      res.status(HttpStatus.NOT_FOUND).json({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'File not found',
       });
     }
   }
