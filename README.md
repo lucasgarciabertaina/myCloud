@@ -31,8 +31,8 @@ My Cloud is a basic cloud file management API that allows users to perform CRUD 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/my-cloud.git
-   cd my-cloud
+   git clone https://github.com/lucasgarciabertaina/myCloud.git
+   cd myCloud
    ```
 
 2. Install dependencies:
